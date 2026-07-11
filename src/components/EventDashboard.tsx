@@ -2,6 +2,7 @@ import { type ReactNode, useMemo, useState } from "react";
 import { BarChart3, Calendar, ChevronLeft, ChevronRight, Filter, Search } from "lucide-react";
 import { EventCard } from "./EventCard";
 import { EventTabs } from "./EventTabs";
+import { CrawlPanel } from "./CrawlPanel";
 import { MAIN_TOPICS, mockEvents } from "../data/mockEvents";
 import { cn } from "../utils/formatters";
 
@@ -185,6 +186,13 @@ export function EventDashboard() {
             </div>
           )}
         </header>
+
+        {/* ── Crawl Panel ── */}
+        <CrawlPanel
+          onCrawlComplete={(count) => {
+            console.log(`[CrawlPanel] Crawl xong: ${count} bài`);
+          }}
+        />
 
         <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
           <EventTabs events={mockEvents} selectedTopic={selectedTopic} onTopicChange={handleTopicChange} />

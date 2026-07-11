@@ -1,106 +1,74 @@
-# Event Extraction Dashboard
+# Event Extraction Dashboard — Frontend
 
-Frontend dashboard built with React, TypeScript, Vite, and Tailwind CSS for displaying AI-extracted financial events from news articles.
+React + Vite frontend cho hệ thống trích xuất sự kiện tài chính từ tin tức CafeF.
 
-The app currently uses mock data only. There is no backend, authentication, database, or API integration yet.
+## Yêu cầu
 
-## Features
+- Node.js ≥ 18
+- npm
 
-- Financial dashboard layout with topic tabs, event cards, badges, chips, quote boxes, and confidence bars.
-- Client-side topic filtering by `main_topic`.
-- Client-side search across event title, event type, involved entities, and evidence text.
-- Dynamic attribute rendering with support for units, percentages, arrays, null values, and status badges.
-- Responsive layout for desktop, tablet, and mobile.
-- Mock financial event data covering ownership/capital changes, business operations, financial results, and legal/governance events.
-
-## Tech Stack
-
-- React 18
-- TypeScript
-- Vite
-- Tailwind CSS
-- lucide-react
-
-## Project Structure
-
-```text
-src/
-  components/
-    Badge.tsx
-    ConfidenceBar.tsx
-    EntityChips.tsx
-    EventCard.tsx
-    EventDashboard.tsx
-    EventTabs.tsx
-    KeyValueList.tsx
-  data/
-    mockEvents.ts
-  types/
-    event.ts
-  utils/
-    formatters.ts
-  App.tsx
-  main.tsx
-  styles.css
-```
-
-## Getting Started
-
-Install dependencies:
+## Cài đặt
 
 ```bash
+git clone <repo-url>
+cd SE365-frontend
+
 npm install
 ```
 
-Run the development server:
+## Cấu hình
+
+Copy file `.env.example` thành `.env.local` rồi điền URL backend:
 
 ```bash
+copy .env.example .env.local
+```
+
+| Biến | Mô tả | Mặc định |
+|------|--------|----------|
+| `VITE_API_URL` | URL đầy đủ của backend FastAPI | *(trống = dùng Vite proxy `/api`)* |
+
+**Local dev** (backend chạy cùng máy `:8000`): không cần set `VITE_API_URL`, Vite proxy tự xử lý.
+
+**Production / deploy riêng**: set `VITE_API_URL=https://your-backend.railway.app`
+
+## Chạy
+
+```bash
+# Development
 npm run dev
-```
+# → http://localhost:5173
 
-Open:
-
-```text
-http://localhost:5173/
-```
-
-Build for production:
-
-```bash
+# Build production
 npm run build
 ```
 
-Preview the production build:
+## Tính năng
 
-```bash
-npm run preview
+- 📊 **Event Dashboard** — hiển thị sự kiện trích xuất từ tin tức tài chính
+- 🔍 **Tìm kiếm & lọc** — theo topic, loại sự kiện, độ tin cậy
+- 📡 **Crawl Panel** — bấm nút để crawl dữ liệu mới từ CafeF qua backend API
+  - Real-time progress bar
+  - Cấu hình nguồn, số bài, date range
+  - Hiển thị trạng thái backend (online/offline)
+
+## Cấu trúc
+
+```
+src/
+├── components/
+│   ├── EventDashboard.tsx   # Layout chính
+│   ├── CrawlPanel.tsx       # Giao diện crawl data
+│   ├── EventCard.tsx
+│   ├── EventTabs.tsx
+│   └── ...
+├── services/
+│   └── crawlService.ts      # HTTP client gọi backend
+├── data/                    # Mock data
+├── types/
+└── utils/
 ```
 
-## Data Model
+## Backend liên quan
 
-Mock events follow the `FinancialEvent` type in `src/types/event.ts`:
-
-```ts
-type FinancialEvent = {
-  id: string;
-  main_topic: string;
-  event_type: string;
-  title: string;
-  entities_involved: string[];
-  context: {
-    who?: string | null;
-    what?: string | null;
-    when?: string | null;
-    where?: string | null;
-    why?: string | null;
-    how?: string | null;
-    tense?: "planned" | "ongoing" | "completed" | "unknown";
-    result?: string | null;
-  };
-  attributes: Record<string, unknown>;
-  evidence_text: string;
-  confidence: number;
-};
-```
-
-To replace mock data with a real API later, keep the same event shape and swap the data source used by `EventDashboard`.
+Xem repo backend: [SE365-backend](../SE365-backend) (hoặc link GitHub của bạn)
