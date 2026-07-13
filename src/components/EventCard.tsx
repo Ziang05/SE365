@@ -27,7 +27,7 @@ export function EventCard({ event, featured = false }: EventCardProps) {
           </h2>
         </div>
         <div className="shrink-0">
-          <TenseBadge tense={event.context.tense} />
+          <TenseBadge tense={event.context?.tense} />
         </div>
       </div>
 

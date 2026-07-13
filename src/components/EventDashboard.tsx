@@ -1,35 +1,116 @@
-import { type ReactNode, useMemo, useState } from "react";
-import { BarChart3, Calendar, ChevronLeft, ChevronRight, Filter, Search } from "lucide-react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import {
+  BarChart3,
+  BrainCircuit,
+  Calendar,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Search,
+  Sparkles,
+} from "lucide-react";
 import { EventCard } from "./EventCard";
 import { EventTabs } from "./EventTabs";
 import { CrawlPanel } from "./CrawlPanel";
-import { MAIN_TOPICS, mockEvents } from "../data/mockEvents";
+import { mockEvents } from "../data/mockEvents";
+import { UI_MAIN_TOPICS, mapTopicToUI } from "../utils/topicMapper";
+import type { FinancialEvent } from "../types/event";
+import type { FinancialEvent as ApiFinancialEvent } from "../services/crawlService";
 import { cn } from "../utils/formatters";
 
 const PAGE_SIZE = 3;
 
+// ── Chuyển đổi FinancialEvent từ API → FinancialEvent cho UI ─────────────────
+// API trả về main_topic = snake_case ("ownership_change"),
+// UI cần UI label ("Biến động sở hữu & vốn") để lọc theo tab.
+function normalizeEvent(raw: ApiFinancialEvent): FinancialEvent {
+  return {
+    ...raw,
+    main_topic: mapTopicToUI(raw.main_topic),
+    // context từ API đã match interface EventContext
+    context: raw.context as FinancialEvent["context"],
+  };
+}
+
 export function EventDashboard() {
-  const [selectedTopic, setSelectedTopic] = useState<string>(MAIN_TOPICS[0]);
+  // ── Data state: bắt đầu từ mockEvents, thay bằng real khi crawl xong ──
+  const [events, setEvents] = useState<FinancialEvent[]>(mockEvents);
+  const [isRealData, setIsRealData] = useState(false);
+  const [lastCrawlStats, setLastCrawlStats] = useState<{
+    eventsCount: number;
+    at: string;
+  } | null>(null);
+
+  // ── UI filter state ──
+  const [selectedTopic, setSelectedTopic] = useState<string>(UI_MAIN_TOPICS[0]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedEventType, setSelectedEventType] = useState("all");
   const [minConfidence, setMinConfidence] = useState(0);
+  
+  // ── Refs & Toast ──
+  const eventsSectionRef = useRef<HTMLElement>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // ── Auto-hide toast ──
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => setToastMessage(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
+
+  // ── Callback từ CrawlPanel khi crawl + inference xong ──
+  const handleCrawlComplete = (apiEvents: ApiFinancialEvent[]) => {
+    if (apiEvents.length === 0) {
+      // Không có event nào → giữ nguyên data cũ, thông báo qua stats
+      setLastCrawlStats({ eventsCount: 0, at: new Date().toLocaleTimeString("vi-VN") });
+      return;
+    }
+
+    const normalized = apiEvents.map(normalizeEvent);
+    setEvents(normalized);
+    setIsRealData(true);
+    setLastCrawlStats({
+      eventsCount: normalized.length,
+      at: new Date().toLocaleTimeString("vi-VN"),
+    });
+
+    // Reset về tab đầu tiên có data
+    const firstTopicWithData = UI_MAIN_TOPICS.find((t) =>
+      normalized.some((e) => e.main_topic === t),
+    );
+    if (firstTopicWithData) {
+      setSelectedTopic(firstTopicWithData);
+    }
+    setCurrentPage(1);
+    setSelectedEventType("all");
+    
+    // Toast notification and scroll
+    setToastMessage(`Đã trích xuất ${normalized.length} sự kiện thành công!`);
+    setTimeout(() => {
+      eventsSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
+
+  // ── Computed options từ events hiện tại ──
   const eventTypeOptions = useMemo(() => {
     return Array.from(
       new Set(
-        mockEvents
+        events
           .filter((event) => event.main_topic === selectedTopic)
           .map((event) => event.event_type),
       ),
     ).sort();
-  }, [selectedTopic]);
+  }, [selectedTopic, events]);
 
+  // ── Filter logic ──
   const filteredEvents = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
-    return mockEvents.filter((event) => {
+    return events.filter((event) => {
       const matchesTopic = event.main_topic === selectedTopic;
       if (!matchesTopic) return false;
       if (selectedEventType !== "all" && event.event_type !== selectedEventType) return false;
@@ -47,7 +128,7 @@ export function EventDashboard() {
 
       return searchableText.includes(normalizedQuery);
     });
-  }, [minConfidence, searchQuery, selectedEventType, selectedTopic]);
+  }, [minConfidence, searchQuery, selectedEventType, selectedTopic, events]);
 
   const totalPages = Math.ceil(filteredEvents.length / PAGE_SIZE);
   const safeCurrentPage = Math.min(currentPage, totalPages || 1);
@@ -97,12 +178,34 @@ export function EventDashboard() {
                 <BarChart3 className="h-6 w-6" />
               </div>
               <div className="min-w-0">
-                <h1 className="break-words text-2xl font-bold text-slate-950 md:text-3xl">
-                  Event Extraction Dashboard
-                </h1>
+                <div className="flex items-center gap-3">
+                  <h1 className="break-words text-2xl font-bold text-slate-950 md:text-3xl">
+                    Event Extraction Dashboard
+                  </h1>
+                  {/* Badge cho biết đang dùng real data hay mock */}
+                  {isRealData ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                      <Sparkles className="h-3 w-3" />
+                      Live AI
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+                      Demo data
+                    </span>
+                  )}
+                </div>
                 <p className="mt-1 text-sm leading-6 text-slate-600 md:text-base">
                   Hiển thị các sự kiện được trích xuất từ bản tin tài chính
                 </p>
+                {/* Stats khi vừa crawl xong */}
+                {lastCrawlStats && (
+                  <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+                    <BrainCircuit className="h-3.5 w-3.5 text-blue-500" />
+                    {lastCrawlStats.eventsCount > 0
+                      ? `AI trích xuất được ${lastCrawlStats.eventsCount} sự kiện lúc ${lastCrawlStats.at}`
+                      : `Không phát hiện sự kiện mới lúc ${lastCrawlStats.at} — đang hiển thị dữ liệu trước`}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -188,14 +291,10 @@ export function EventDashboard() {
         </header>
 
         {/* ── Crawl Panel ── */}
-        <CrawlPanel
-          onCrawlComplete={(count) => {
-            console.log(`[CrawlPanel] Crawl xong: ${count} bài`);
-          }}
-        />
+        <CrawlPanel onCrawlComplete={handleCrawlComplete} />
 
-        <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <EventTabs events={mockEvents} selectedTopic={selectedTopic} onTopicChange={handleTopicChange} />
+        <section ref={eventsSectionRef} className="rounded-2xl border border-slate-200 bg-white shadow-sm scroll-mt-6">
+          <EventTabs events={events} selectedTopic={selectedTopic} onTopicChange={handleTopicChange} />
 
           <div className="space-y-4 p-4 md:p-5">
             {visibleEvents.length > 0 ? (
@@ -205,7 +304,11 @@ export function EventDashboard() {
             ) : (
               <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
                 <p className="text-sm font-semibold text-slate-700">Không tìm thấy sự kiện phù hợp</p>
-                <p className="mt-1 text-sm text-slate-500">Thử đổi từ khóa tìm kiếm hoặc chọn topic khác.</p>
+                <p className="mt-1 text-sm text-slate-500">
+                  {isRealData
+                    ? "Thử đổi từ khóa tìm kiếm, chọn topic khác hoặc crawl thêm bài."
+                    : "Bấm \"Crawl Data\" để tải dữ liệu thật từ CafeF và phân tích bằng AI."}
+                </p>
               </div>
             )}
           </div>
@@ -244,6 +347,21 @@ export function EventDashboard() {
           </div>
         </section>
       </div>
+
+      {/* ── Toast Notification ── */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 shadow-lg animate-in slide-in-from-bottom-5">
+          <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+          {toastMessage}
+          <button
+            type="button"
+            className="ml-2 text-emerald-600 hover:text-emerald-800"
+            onClick={() => setToastMessage(null)}
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </main>
   );
 }

@@ -1,4 +1,4 @@
-export type EventTense = "planned" | "ongoing" | "completed" | "unknown";
+export type EventTense = "planned" | "ongoing" | "completed" | "unknown" | (string & {});
 
 export type EventContext = {
   who?: string | null;
@@ -7,7 +7,7 @@ export type EventContext = {
   where?: string | null;
   why?: string | null;
   how?: string | null;
-  tense?: EventTense;
+  tense?: EventTense | null;
   result?: string | null;
 };
 

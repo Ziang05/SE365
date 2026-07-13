@@ -1,74 +1,29 @@
-# Event Extraction Dashboard — Frontend
+# FinDec AI - Frontend (SE365)
 
-React + Vite frontend cho hệ thống trích xuất sự kiện tài chính từ tin tức CafeF.
+Đây là giao diện Web (Frontend) cho hệ thống Trích xuất sự kiện tài chính. Website được xây dựng bằng React và Vite, giúp bạn dễ dàng thao tác cào dữ liệu (crawl) và xem kết quả AI phân tích ngay trên màn hình.
 
-## Yêu cầu
+## 🛠 Yêu cầu hệ thống
+- **Node.js** phiên bản 18 trở lên.
 
-- Node.js ≥ 18
-- npm
+## 🚀 Hướng dẫn cài đặt & chạy nhanh (Local)
 
-## Cài đặt
+### Bước 1: Cài đặt thư viện
+Mở terminal (PowerShell/CMD) tại thư mục `SE365` và chạy lệnh sau để tải các gói cần thiết:
 
 ```bash
-git clone <repo-url>
-cd SE365-frontend
-
 npm install
 ```
 
-## Cấu hình
-
-Copy file `.env.example` thành `.env.local` rồi điền URL backend:
-
-```bash
-copy .env.example .env.local
-```
-
-| Biến | Mô tả | Mặc định |
-|------|--------|----------|
-| `VITE_API_URL` | URL đầy đủ của backend FastAPI | *(trống = dùng Vite proxy `/api`)* |
-
-**Local dev** (backend chạy cùng máy `:8000`): không cần set `VITE_API_URL`, Vite proxy tự xử lý.
-
-**Production / deploy riêng**: set `VITE_API_URL=https://your-backend.railway.app`
-
-## Chạy
+### Bước 2: Chạy Website
+Đảm bảo rằng bạn **đã bật Backend** (ở thư mục `SE365-backend`) trước. Sau đó, chạy lệnh này để mở giao diện Web:
 
 ```bash
-# Development
 npm run dev
-# → http://localhost:5173
-
-# Build production
-npm run build
 ```
 
-## Tính năng
+- Trình duyệt sẽ tự động nhận diện và bạn có thể truy cập web tại: `http://localhost:5173`.
+- Bạn có thể nhấn nút "Crawl dữ liệu mới" trên web để bắt đầu trải nghiệm!
 
-- 📊 **Event Dashboard** — hiển thị sự kiện trích xuất từ tin tức tài chính
-- 🔍 **Tìm kiếm & lọc** — theo topic, loại sự kiện, độ tin cậy
-- 📡 **Crawl Panel** — bấm nút để crawl dữ liệu mới từ CafeF qua backend API
-  - Real-time progress bar
-  - Cấu hình nguồn, số bài, date range
-  - Hiển thị trạng thái backend (online/offline)
-
-## Cấu trúc
-
-```
-src/
-├── components/
-│   ├── EventDashboard.tsx   # Layout chính
-│   ├── CrawlPanel.tsx       # Giao diện crawl data
-│   ├── EventCard.tsx
-│   ├── EventTabs.tsx
-│   └── ...
-├── services/
-│   └── crawlService.ts      # HTTP client gọi backend
-├── data/                    # Mock data
-├── types/
-└── utils/
-```
-
-## Backend liên quan
-
-Xem repo backend: [SE365-backend](../SE365-backend) (hoặc link GitHub của bạn)
+---
+**💡 Mẹo nhỏ về file cấu hình:**
+Website đã được thiết lập sẵn (thông qua Vite proxy) để tự động kết nối với Backend đang chạy ở cổng 8000 trên máy tính của bạn. Do đó, bạn **KHÔNG CẦN** phải tạo file `.env.local` hay cấu hình đường dẫn API gì cả. Cứ tải về, `npm install` và `npm run dev` là chạy!

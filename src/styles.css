@@ -173,7 +173,104 @@ body {
   @apply border-emerald-200 bg-emerald-50 text-emerald-800;
 }
 
+.crawl-panel__result--info {
+  @apply border-blue-200 bg-blue-50 text-blue-800;
+}
+
 .crawl-panel__result--error {
   @apply border-red-200 bg-red-50 text-red-800;
 }
 
+/* ═══════════════════════════════════════════════
+   Phase 3: Pipeline step indicator
+═══════════════════════════════════════════════ */
+
+.crawl-pipeline {
+  @apply flex items-center gap-0 mt-3;
+}
+
+.crawl-pipeline__step {
+  @apply flex items-center gap-2 text-xs font-semibold;
+}
+
+.crawl-pipeline__step--done {
+  @apply text-emerald-600;
+}
+
+.crawl-pipeline__step--active {
+  @apply text-blue-600;
+}
+
+.crawl-pipeline__step--waiting {
+  @apply text-slate-400;
+}
+
+.crawl-pipeline__dot {
+  @apply flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white text-[10px] font-bold;
+}
+
+.crawl-pipeline__dot--done {
+  @apply bg-emerald-500;
+}
+
+.crawl-pipeline__dot--active {
+  @apply bg-blue-500;
+  animation: dot-pulse 1.2s ease-in-out infinite;
+}
+
+.crawl-pipeline__dot--waiting {
+  @apply bg-slate-200 text-slate-400;
+}
+
+.crawl-pipeline__connector {
+  @apply h-px flex-1 mx-2;
+}
+
+.crawl-pipeline__connector--done {
+  @apply bg-emerald-300;
+}
+
+.crawl-pipeline__connector--waiting {
+  @apply bg-slate-200;
+}
+
+/* Shimmer animation for analyzing bar */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+.crawl-panel__progress-fill--analyzing {
+  background: linear-gradient(
+    90deg,
+    theme('colors.blue.500') 0%,
+    theme('colors.indigo.400') 40%,
+    theme('colors.blue.500') 60%,
+    theme('colors.blue.600') 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s linear infinite;
+  width: 100% !important;
+  transition: none;
+}
+
+/* Dot pulse */
+@keyframes dot-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.5); }
+  50%       { box-shadow: 0 0 0 5px rgba(59,130,246,0); }
+}
+
+/* Slide-in for result banner */
+@keyframes slide-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.crawl-panel__result {
+  animation: slide-in-up 0.25s ease-out both;
+}
+
+/* Timer text */
+.crawl-pipeline__timer {
+  @apply ml-auto text-xs font-mono text-slate-400;
+}

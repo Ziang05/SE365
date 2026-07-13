@@ -38,18 +38,20 @@ export function KeyValueList({ title, type = "context", items }: KeyValueListPro
   );
 }
 
-export function ContextList({ context }: { context: Record<string, unknown> }) {
+export function ContextList({ context }: { context: Record<string, unknown> | null | undefined }) {
+  const safeCtx = context ?? {};
   const fields = ["who", "what", "when", "where", "why", "how", "result"];
   const items = fields.map((field) => ({
     label: formatLabel(field),
-    value: formatEmptyValue(context[field]),
+    value: formatEmptyValue(safeCtx[field]),
   }));
 
   return <KeyValueList title="Context" items={items} />;
 }
 
-export function AttributeList({ attributes }: { attributes: Record<string, unknown> }) {
-  const items = Object.entries(attributes).map(([key, value]) => ({
+export function AttributeList({ attributes }: { attributes: Record<string, unknown> | null | undefined }) {
+  const safeAttrs = attributes ?? {};
+  const items = Object.entries(safeAttrs).map(([key, value]) => ({
     label: formatLabel(key),
     value: isStatusValue(value) ? <StatusBadge status={value} /> : formatAttributeValue(key, value),
   }));

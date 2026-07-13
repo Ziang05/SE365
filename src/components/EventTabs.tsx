@@ -1,4 +1,4 @@
-import { MAIN_TOPICS } from "../data/mockEvents";
+import { UI_MAIN_TOPICS } from "../utils/topicMapper";
 import type { FinancialEvent } from "../types/event";
 import { cn } from "../utils/formatters";
 
@@ -9,7 +9,7 @@ type EventTabsProps = {
 };
 
 export function EventTabs({ events, selectedTopic, onTopicChange }: EventTabsProps) {
-  const counts = MAIN_TOPICS.reduce<Record<string, number>>((acc, topic) => {
+  const counts = UI_MAIN_TOPICS.reduce<Record<string, number>>((acc, topic) => {
     acc[topic] = events.filter((event) => event.main_topic === topic).length;
     return acc;
   }, {});
@@ -17,7 +17,7 @@ export function EventTabs({ events, selectedTopic, onTopicChange }: EventTabsPro
   return (
     <div className="border-b border-slate-200">
       <div className="flex gap-1 overflow-x-auto">
-        {MAIN_TOPICS.map((topic) => {
+        {UI_MAIN_TOPICS.map((topic) => {
           const isActive = topic === selectedTopic;
           return (
             <button

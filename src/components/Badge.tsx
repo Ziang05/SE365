@@ -53,10 +53,11 @@ export function EventTypeBadge({ eventType }: { eventType: string }) {
   return <Badge tone={eventToneMap[eventType] ?? "gray"}>{eventType}</Badge>;
 }
 
-export function TenseBadge({ tense }: { tense: EventTense | undefined }) {
+export function TenseBadge({ tense }: { tense: EventTense | null | undefined }) {
   const resolvedTense = tense ?? "unknown";
+  const tone = tenseToneMap[resolvedTense as EventTense] ?? "gray";
   return (
-    <Badge tone={tenseToneMap[resolvedTense]} className="capitalize">
+    <Badge tone={tone} className="capitalize">
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {resolvedTense}
     </Badge>

@@ -19,7 +19,7 @@ export interface CrawlProgress {
   total: number;
 }
 
-export type CrawlStatus = "pending" | "running" | "done" | "error";
+export type CrawlStatus = "pending" | "running" | "analyzing" | "done" | "error";
 
 export interface CrawlStatusResponse {
   job_id: string;
@@ -47,11 +47,40 @@ export interface CrawledArticle {
   crawl_error: string;
 }
 
+// ── FinancialEvent (mirror của backend FinancialEventOut) ──────────────
+
+export interface EventContext {
+  who?: string | null;
+  what?: string | null;
+  when?: string | null;
+  where?: string | null;
+  why?: string | null;
+  how?: string | null;
+  tense?: string | null;
+  result?: string | null;
+}
+
+export interface FinancialEvent {
+  id: string;
+  main_topic: string;        // snake_case từ model, vd "ownership_change"
+  event_type: string;
+  title: string;
+  entities_involved: string[];
+  context: EventContext;
+  attributes: Record<string, unknown>;
+  evidence_text: string;
+  confidence: number;
+}
+
 export interface CrawlResultResponse {
   job_id: string;
   articles: CrawledArticle[];
+  events: FinancialEvent[];  // ← real events từ model
   total: number;
+  events_total: number;
 }
+
+// ── API calls ──────────────────────────────────────────────────────────
 
 /** Bắt đầu một crawl job mới, trả về job_id ngay lập tức */
 export async function startCrawl(config: CrawlConfig): Promise<string> {
@@ -82,7 +111,7 @@ export async function getCrawlStatus(jobId: string): Promise<CrawlStatusResponse
   return response.json();
 }
 
-/** Lấy kết quả articles sau khi job done */
+/** Lấy kết quả articles + events sau khi job done */
 export async function getCrawlResult(jobId: string): Promise<CrawlResultResponse> {
   const response = await fetch(`${BASE_URL}/crawl/result/${jobId}`);
 
